@@ -9,7 +9,23 @@ export default {
     "./app.vue"
   ],
   theme: {
-    extend: {}
+    extend: {
+      fontFamily: {
+        sans: [
+          "Pretendard",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "Noto Sans",
+          "Apple Color Emoji",
+          "Segoe UI Emoji"
+        ]
+      }
+    }
   },
   plugins: []
 } satisfies Config;

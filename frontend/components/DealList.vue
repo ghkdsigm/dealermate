@@ -8,13 +8,18 @@ const emit = defineEmits<{ (e: "select", id: number): void }>();
     <div
       v-for="d in props.items"
       :key="d.id"
-      class="rounded-xl border p-3 cursor-pointer hover:bg-slate-50"
-      :class="props.selectedId === d.id ? 'border-slate-900 bg-slate-50' : ''"
+      class="rounded-2xl border p-3 cursor-pointer hover:bg-slate-50 transition"
+      :class="props.selectedId === d.id ? 'border-slate-900 bg-slate-50 shadow-sm' : ''"
       @click="emit('select', d.id)"
     >
       <div class="flex items-center justify-between">
-        <div class="text-sm font-medium">Deal #{{ d.id }}</div>
-        <div class="text-xs text-slate-500">{{ d.status }}</div>
+        <div class="text-sm font-semibold text-slate-900">Deal #{{ d.id }}</div>
+        <div
+          class="text-xs font-semibold px-2 py-1 rounded-full"
+          :class="d.status === 'open' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
+        >
+          {{ d.status }}
+        </div>
       </div>
       <div class="mt-1 text-xs text-slate-600 truncate">
         {{ d.customer_token }}

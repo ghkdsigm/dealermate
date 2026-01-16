@@ -13,5 +13,5 @@ svc = AssistantService()
 
 @router.post("/assist", response_model=AssistResponse)
 async def assist(payload: AssistRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    res = await svc.assist(db=db, user=user, message=payload.message, deal_id=payload.deal_id)
+    res = await svc.assist(db=db, user=user, message=payload.message, deal_id=payload.deal_id, filters=payload.filters)
     return AssistResponse(**res)

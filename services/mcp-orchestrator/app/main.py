@@ -29,6 +29,8 @@ TOOL_REGISTRY: dict[str, tuple[str, str]] = {
     # inventory
     "inventory.get_car_by_plate": (INVENTORY_BASE_URL, "/tools/get_car_by_plate"),
     "inventory.search_listings": (INVENTORY_BASE_URL, "/tools/search_listings"),
+    "inventory.search_listings_filtered": (INVENTORY_BASE_URL, "/tools/search_listings_filtered"),
+    "inventory.get_filter_options": (INVENTORY_BASE_URL, "/tools/get_filter_options"),
     "inventory.compare_listings": (INVENTORY_BASE_URL, "/tools/compare_listings"),
     # history
     "history.get_vehicle_registry_summary": (HISTORY_BASE_URL, "/tools/get_vehicle_registry_summary"),

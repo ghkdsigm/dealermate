@@ -10,10 +10,10 @@ function logout() {
 </script>
 
 <template>
-  <div class="border-b bg-white">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+  <div class="border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">DM</div>
+        <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-bold">DM</div>
         <div>
           <div class="font-semibold">DealerMate</div>
           <div class="text-xs text-slate-600">판매자(딜러/상사)용 AI 업무 에이전트</div>
@@ -24,7 +24,7 @@ function logout() {
         <div class="text-sm text-slate-700" v-if="auth.profile">
           {{ auth.profile.name }}
         </div>
-        <button class="rounded-xl border px-3 py-2 text-sm" @click="logout">로그아웃</button>
+        <button class="rounded-xl border px-3 py-2 text-sm hover:bg-slate-50" @click="logout">로그아웃</button>
       </div>
     </div>
   </div>

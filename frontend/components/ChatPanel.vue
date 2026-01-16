@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useApi } from "~/composables/useApi";
 
-const props = defineProps<{ dealId: number | null }>();
+const props = defineProps<{ dealId: number | null; draftMessage?: string; filters?: Record<string, any> }>();
 const { request } = useApi();
 
 const input = ref("");
 const loading = ref(false);
+const inputRef = ref<HTMLInputElement | null>(null);
 const messages = ref<any[]>([
   { role: "assistant", text: "안녕하세요. 조건 또는 차량번호로 질문해 주세요." }
 ]);
@@ -21,7 +22,7 @@ async function send() {
   try {
     const res = await request<any>("/assistant/assist", {
       method: "POST",
-      body: { deal_id: props.dealId, message: msg }
+      body: { deal_id: props.dealId, message: msg, filters: props.filters || null }
     });
     const header = `[intent: ${res.intent}] tools: ${(res.used_tools || []).join(", ")}`;
     const body = JSON.stringify(res.result, null, 2);
@@ -32,6 +33,15 @@ async function send() {
     loading.value = false;
   }
 }
+
+watch(
+  () => props.draftMessage,
+  (v) => {
+    if (!v) return;
+    input.value = v;
+    nextTick(() => inputRef.value?.focus());
+  }
+);
 </script>
 
 <template>
@@ -49,6 +59,7 @@ async function send() {
 
     <div class="flex gap-2">
       <input
+        ref="inputRef"
         v-model="input"
         class="flex-1 rounded-xl border px-3 py-2"
         placeholder="예: 무사고 SUV 2000만원 이하 추천"

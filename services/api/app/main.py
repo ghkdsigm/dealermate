@@ -8,7 +8,8 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
 from app.models.user import Role, User
-from app.routers import assist, auth, deals, health
+from app.models.quick_question import QuickQuestion
+from app.routers import assist, auth, deals, health, quick_questions, filters
 from app.utils.security import hash_password
 
 log = logging.getLogger("dealermate")
@@ -37,6 +38,25 @@ def seed_users(db: Session):
     db.commit()
 
 
+def seed_quick_questions(db: Session):
+    defaults = [
+        "무사고 SUV 2000만원 이하 추천해줘",
+        "12가3456 리스크 고지 멘트 만들어줘",
+        "쏘렌토 시세 요약해줘",
+        "비교표 만들어줘",
+        "팔로업 카톡 문구",
+    ]
+
+    users = db.query(User).all()
+    for u in users:
+        exists = db.query(QuickQuestion).filter(QuickQuestion.owner_user_id == u.id).first()
+        if exists:
+            continue
+        for t in defaults:
+            db.add(QuickQuestion(owner_user_id=u.id, text=t))
+    db.commit()
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="DealerMate API", version="0.1.0")
 
@@ -55,6 +75,7 @@ def create_app() -> FastAPI:
         db = SessionLocal()
         try:
             seed_users(db)
+            seed_quick_questions(db)
         finally:
             db.close()
 
@@ -62,6 +83,8 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(deals.router)
     app.include_router(assist.router)
+    app.include_router(quick_questions.router)
+    app.include_router(filters.router)
 
     return app
 

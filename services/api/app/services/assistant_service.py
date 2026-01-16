@@ -21,7 +21,14 @@ class AssistantService:
     def __init__(self) -> None:
         self.mcp = McpClient()
 
-    async def assist(self, db: Session, user: User, message: str, deal_id: int | None = None) -> dict[str, Any]:
+    async def assist(
+        self,
+        db: Session,
+        user: User,
+        message: str,
+        deal_id: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         intent = classify(message)
         used_tools: list[str] = []
 
@@ -48,10 +55,23 @@ class AssistantService:
 
         if intent == "recommend":
             used_tools.append("inventory.search_listings")
-            tool_res = await self.mcp.call_tool(
-                "inventory.search_listings",
-                {"query": message, "top_k": 3, "branch_id": user.branch_id, "dealer_employee_id": user.employee_id},
-            )
+            if filters:
+                used_tools[-1] = "inventory.search_listings_filtered"
+                tool_res = await self.mcp.call_tool(
+                    "inventory.search_listings_filtered",
+                    {
+                        "query": message,
+                        "top_k": 3,
+                        "branch_id": user.branch_id,
+                        "dealer_employee_id": user.employee_id,
+                        "filters": filters,
+                    },
+                )
+            else:
+                tool_res = await self.mcp.call_tool(
+                    "inventory.search_listings",
+                    {"query": message, "top_k": 3, "branch_id": user.branch_id, "dealer_employee_id": user.employee_id},
+                )
             payload["recommendations"] = tool_res.get("data")
             payload["summary"] = "조건에 맞는 매물을 3개로 정제해 추천했습니다."
 
