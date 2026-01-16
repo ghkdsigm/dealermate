@@ -1,0 +1,76 @@
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+.vscode/
+.idea/
+
+# Cursor / local tooling
+.cursor/
+
+# --- Env / Secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Node / Nuxt ---
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+
+.nuxt/
+.output/
+dist/
+.vercel/
+.netlify/
+
+# Nuxt Nitro output (older setups)
+.nitro/
+
+# --- Coverage / Reports ---
+coverage/
+.nyc_output/
+*.lcov
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtualenvs
+.venv/
+venv/
+ENV/
+env/
+
+# --- FastAPI / Uvicorn ---
+.uvicorn/
+
+# --- Local DB / Volumes (if any) ---
+*.sqlite3
+*.db
+
+

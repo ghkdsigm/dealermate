@@ -83,6 +83,7 @@ services:
       MCP_ORCH_URL: http://mcp-orchestrator:8000
       REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: INFO
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
     depends_on:
       postgres:
         condition: service_healthy

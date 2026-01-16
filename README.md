@@ -81,3 +81,100 @@ docker compose up --build
 - Tool schema(versioning)와 승인 플로우(상사 승인/점검)
 - LLM 연결(의도 분류 고도화, 템플릿 생성 품질 개선)
 - 관제/지표: 상담 전환율, 응답시간, 툴 실패율, 추천 클릭률
+
+
+## 프로젝트 구조도
+
+```text
+dealermate/                                   # 리포지토리 루트
+├─ docker-compose.yml                          # 전체 서비스(프론트/API/MCP/DB/Redis) 로컬 오케스트레이션
+├─ infra/                                      # 인프라 초기화/설정(컨테이너 마운트용)
+│  └─ postgres/
+│     └─ init/
+│        └─ 001_extensions.sql                 # Postgres 확장/초기 설정(초기화 스크립트)
+├─ frontend/                                   # Nuxt 3 프론트엔드(딜러/상사 업무 UI)
+│  ├─ Dockerfile                               # 프론트 컨테이너 빌드 정의
+│  ├─ package.json                             # 프론트 의존성/스크립트
+│  ├─ nuxt.config.ts                           # Nuxt 설정(모듈/라우팅/런타임 설정 등)
+│  ├─ tailwind.config.ts                       # Tailwind 설정
+│  ├─ app.vue                                  # 앱 루트 엔트리/레이아웃
+│  ├─ assets/
+│  │  └─ css/
+│  │     └─ tailwind.css                       # 글로벌 스타일/Tailwind 엔트리
+│  ├─ pages/                                   # 파일 기반 라우팅
+│  │  ├─ index.vue                             # 진입(로그인/랜딩)
+│  │  └─ dashboard.vue                         # Deal + Chat 기반 업무 화면
+│  ├─ components/                              # 화면 구성 컴포넌트
+│  │  ├─ ChatPanel.vue                         # Assistant 채팅/응답 패널
+│  │  ├─ DealList.vue                          # 상담(Deal) 목록/선택 UI
+│  │  ├─ LoginForm.vue                         # 로그인 폼 UI
+│  │  └─ TopBar.vue                            # 상단 바(상태/네비게이션)
+│  ├─ composables/
+│  │  └─ useApi.ts                             # API 호출 래퍼(인증 토큰 포함 등)
+│  └─ stores/
+│     └─ auth.ts                               # 인증 상태/토큰 스토어(Pinia)
+├─ services/                                   # 백엔드 서비스 모음(API + MCP 툴 서버)
+│  ├─ api/                                     # 메인 FastAPI API(인증/JWT, Deal, Assistant)
+│  │  ├─ Dockerfile                            # API 컨테이너 빌드 정의
+│  │  ├─ requirements.txt                      # API Python 의존성
+│  │  └─ app/
+│  │     ├─ main.py                            # FastAPI 엔트리(라우터/미들웨어 등록)
+│  │     ├─ core/
+│  │     │  └─ config.py                       # 환경변수/설정 로딩
+│  │     ├─ db/
+│  │     │  ├─ base.py                         # SQLAlchemy Base/메타데이터
+│  │     │  └─ session.py                      # DB 엔진/세션 생성
+│  │     ├─ models/                            # DB 모델(테이블 정의)
+│  │     │  ├─ __init__.py                     # 모델 패키지 초기화
+│  │     │  ├─ artifact.py                     # 생성물(추천/비교표/멘트 등) 저장 모델
+│  │     │  ├─ audit_log.py                    # 감사/행위 로그 모델
+│  │     │  ├─ deal.py                         # 상담(Deal) 모델
+│  │     │  └─ user.py                         # 사용자(딜러/상사/어드민) 모델
+│  │     ├─ routers/                           # API 라우터(엔드포인트)
+│  │     │  ├─ __init__.py                     # 라우터 패키지 초기화
+│  │     │  ├─ assist.py                       # Assistant 엔드포인트(의도→툴→템플릿)
+│  │     │  ├─ auth.py                         # 인증(로그인/JWT)
+│  │     │  ├─ deals.py                        # Deal CRUD
+│  │     │  └─ health.py                       # 헬스체크
+│  │     ├─ schemas/                           # Pydantic 스키마(요청/응답)
+│  │     │  ├─ assist.py                       # Assistant 요청/응답 스키마
+│  │     │  └─ auth.py                         # 로그인/JWT 스키마
+│  │     ├─ services/                          # 비즈니스 로직 레이어
+│  │     │  ├─ assistant_service.py            # Assistant 처리 오케스트레이션
+│  │     │  ├─ intent_router.py                # 의도(Intent) 분류/라우팅
+│  │     │  └─ mcp_client.py                   # MCP Orchestrator 호출 클라이언트
+│  │     └─ utils/
+│  │        ├─ deps.py                         # FastAPI DI(인증/DB 세션 주입 등)
+│  │        └─ security.py                     # 보안 유틸(JWT/해시 등)
+│  ├─ mcp-orchestrator/                        # MCP 오케스트레이터(툴 라우팅/로그/마스킹)
+│  │  ├─ Dockerfile                            # Orchestrator 컨테이너 빌드 정의
+│  │  ├─ requirements.txt                      # Orchestrator Python 의존성
+│  │  └─ app/
+│  │     └─ main.py                            # Orchestrator 엔트리(`/tool/call` 제공)
+│  ├─ mcp-inventory/                           # 매물/재고 도메인 MCP 서버(데모)
+│  │  ├─ Dockerfile                            # Inventory 컨테이너 빌드 정의
+│  │  ├─ requirements.txt                      # Inventory Python 의존성
+│  │  └─ app/
+│  │     └─ main.py                            # inventory 툴 구현
+│  ├─ mcp-history/                             # 원부/정비이력 도메인 MCP 서버(데모)
+│  │  ├─ Dockerfile                            # History 컨테이너 빌드 정의
+│  │  ├─ requirements.txt                      # History Python 의존성
+│  │  └─ app/
+│  │     └─ main.py                            # history 툴 구현
+│  └─ mcp-pricing/                             # 시세/가격 도메인 MCP 서버(데모)
+│     ├─ Dockerfile                            # Pricing 컨테이너 빌드 정의
+│     ├─ requirements.txt                      # Pricing Python 의존성
+│     └─ app/
+│        └─ main.py                            # pricing 툴 구현
+└─ README copy.md                              # README 초안/백업(동일 내용 복사본)
+```
+
+
+## 플젝 압축 명령어
+tar -a -c -f dealermate.zip `
+  --exclude=".env" `
+  --exclude=".gitignore" `
+  --exclude="README.md" `
+  --exclude="README copy.md" `
+  --exclude="frontend/node_modules" `
+  .

@@ -1,8 +1,10 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
 from app.models.user import Role, User
@@ -37,6 +39,15 @@ def seed_users(db: Session):
 
 def create_app() -> FastAPI:
     app = FastAPI(title="DealerMate API", version="0.1.0")
+
+    cors_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.on_event("startup")
     def on_startup():
