@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dealermate-postgres
+    environment:
+      POSTGRES_USER: dealermate
+      POSTGRES_PASSWORD: dealermate
+      POSTGRES_DB: dealermate
+    ports:
+      - "5432:5432"
+    volumes:
+      - dealermate_pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dealermate -d dealermate"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: dealermate-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mcp-inventory:
+    build: ./services/mcp-inventory
+    container_name: dealermate-mcp-inventory
+    environment:
+      SERVICE_NAME: mcp-inventory
+    ports:
+      - "8011:8000"
+
+  mcp-history:
+    build: ./services/mcp-history
+    container_name: dealermate-mcp-history
+    environment:
+      SERVICE_NAME: mcp-history
+    ports:
+      - "8012:8000"
+
+  mcp-pricing:
+    build: ./services/mcp-pricing
+    container_name: dealermate-mcp-pricing
+    environment:
+      SERVICE_NAME: mcp-pricing
+    ports:
+      - "8013:8000"
+
+  mcp-orchestrator:
+    build: ./services/mcp-orchestrator
+    container_name: dealermate-mcp-orchestrator
+    environment:
+      INVENTORY_BASE_URL: http://mcp-inventory:8000
+      HISTORY_BASE_URL: http://mcp-history:8000
+      PRICING_BASE_URL: http://mcp-pricing:8000
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+      mcp-inventory:
+        condition: service_started
+      mcp-history:
+        condition: service_started
+      mcp-pricing:
+        condition: service_started
+    ports:
+      - "8010:8000"
+
+  api:
+    build: ./services/api
+    container_name: dealermate-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://dealermate:dealermate@postgres:5432/dealermate
+      JWT_SECRET: change-me-in-prod
+      JWT_ISSUER: dealermate
+      JWT_AUDIENCE: dealermate-web
+      MCP_ORCH_URL: http://mcp-orchestrator:8000
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-orchestrator:
+        condition: service_started
+    ports:
+      - "8001:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: dealermate-frontend
+    environment:
+      NUXT_PUBLIC_API_BASE: http://localhost:8001
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  dealermate_pgdata:
